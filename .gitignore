@@ -1,0 +1,6 @@
+/TCPChat
+/logs/
+/coverage.out
+*.test
+.DS_Store
+__pycache__/
