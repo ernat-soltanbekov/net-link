@@ -175,8 +175,8 @@ func run(args []string, input io.ReadCloser, output, diagnostic io.Writer) int {
 		}
 		return 0
 	}
-	// Parent directories are created only for the standard logs location.
-	// An explicitly chosen path must already have a parent directory.
+	// Родительский каталог создаётся только для стандартного расположения журналов.
+	// Если путь указан явно, его родительский каталог уже должен существовать.
 	if o.logPath == "logs/net-link.log" {
 		if err := os.MkdirAll("logs", 0700); err != nil {
 			fmt.Fprintln(diagnostic, "net-link:", err)

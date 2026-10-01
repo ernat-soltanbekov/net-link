@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Black-box acceptance and load tests. Python is test tooling, never app runtime."""
+"""Внешние приёмочные и нагрузочные тесты. Python нужен для проверок, а не для работы приложения."""
 import argparse
 import contextlib
 import fcntl
@@ -213,7 +213,7 @@ def load(messages):
 def replay_during_live():
     with server() as (port, _, _):
         a = Peer(port, "Author")
-        # Read private warnings while producing a history larger than TCP buffers.
+        # Читаем личные предупреждения, пока создаём историю размером больше буферов TCP.
         stop = threading.Event()
         def drain():
             try:
@@ -222,8 +222,8 @@ def replay_during_live():
         thread = threading.Thread(target=drain, daemon=True); thread.start()
         count = 2000
         for i in range(count): a.send("archive-%04d-" % i + "x"*3800)
-        # A separate reader joins while messages may still be accepted. Snapshot
-        # lines precede its profile; the remainder must arrive as ordered live data.
+        # Отдельный читатель подключается, пока сервер ещё может принимать сообщения.
+        # За сохранённой частью истории идёт профиль, затем — новые сообщения в правильном порядке.
         b = Peer(port, "Replay")
         lines = [line for line in b.history if "][Author]:archive-" in line]
         while len(lines) < count:
@@ -289,7 +289,7 @@ def tui():
             size(25,8);time.sleep(0.15);size(100,30);time.sleep(0.15)
             os.write(master,b"resize\r")
             check("[Operator]:after-resize" in peer.line(), "TUI preserves draft through small-terminal resize and nickname change")
-            os.write(master,b"\x1b[5~\x1b[6~") # PageUp / PageDown
+            os.write(master,b"\x1b[5~\x1b[6~") # Клавиши прокрутки страницы вверх и вниз.
             time.sleep(0.1)
             os.write(master,b"\x03")
             proc.wait(timeout=5)

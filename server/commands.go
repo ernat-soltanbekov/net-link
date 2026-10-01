@@ -7,8 +7,8 @@ import (
 
 const help = "Commands: /nick NAME, /join ROOM, /rooms, /who, /profile, /help, /quit. Rooms use a-z, 0-9, - and _."
 
-// command runs under the same lock as messages: changing rooms is one ordered
-// event, never a half-finished move that can leak a message to another room.
+// command использует ту же блокировку, что и обработка сообщений: смена комнаты
+// выполняется целиком, поэтому сообщение не попадёт в чужую комнату во время перехода.
 func (s *Server) command(c *connection, line string) bool {
 	parts := strings.SplitN(line, " ", 2)
 	arg := ""
@@ -109,7 +109,7 @@ func (s *Server) command(c *connection, line string) bool {
 	return false
 }
 
-// The permitted package list excludes sort. Lists contain at most 32 entries.
+// Пакет sort отсутствует в списке разрешённых. В списках не более 32 элементов.
 func insert(items []string, item string) []string {
 	items = append(items, item)
 	for i := len(items) - 1; i > 0 && items[i] < items[i-1]; i-- {

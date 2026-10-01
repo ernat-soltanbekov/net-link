@@ -1,14 +1,14 @@
 # net-link
 
-[![Audit](https://github.com/ernat-soltanbekov/net-link/actions/workflows/ci.yml/badge.svg)](https://github.com/ernat-soltanbekov/net-link/actions/workflows/ci.yml)
+[![Аудит](https://github.com/ernat-soltanbekov/net-link/actions/workflows/ci.yml/badge.svg)](https://github.com/ernat-soltanbekov/net-link/actions/workflows/ci.yml)
 
-A Go TCP group chat with complete session history, activity profiling, a NetCat-compatible protocol and a terminal client. Built for the Tomorrow School / 01-Edu `net-link` subject.
+Групповой TCP-чат на Go с полной историей сеанса, оценкой активности, протоколом, совместимым с NetCat, и терминальным клиентом. Проект создан по заданию `net-link` программы Tomorrow School / 01-Edu.
 
-**Yernat “GhostOfAstana” Soltanbekov** — veteran, Tomorrow School student, technically educated, practicing martial arts every morning since 2008. Candidate for the Astana Hub team (МИИЦР РК), as described by the author; this personal learning project does not represent an appointment or institutional endorsement. The olive/green terminal identity and the `dojo` example reflect discipline, steady practice and clear communication.
+**Ернат «GhostOfAstana» Солтанбеков** — в прошлом военный, студент Tomorrow School с техническим образованием, практикующий боевые искусства каждое утро с 2008 года. По собственному описанию — кандидат в команду Astana Hub (МИИЦР РК). Это личный учебный проект; он не означает назначения на должность или официальной поддержки организации. Зелёное оформление терминала и пример комнаты `dojo` отражают дисциплину, постоянную практику и ясное общение.
 
-## Start in three terminals
+## Запуск в трёх терминалах
 
-Requires **Go 1.25+**, macOS or Linux, and internet access for the first dependency download. Python 3 is used only by the audit scripts. The application is Go; its only direct external dependency is the explicitly permitted `gocui` TUI library.
+Потребуются **Go 1.25 или новее**, macOS или Linux и доступ к интернету для первоначальной загрузки зависимостей. Python 3 используется только в скриптах аудита. Приложение написано на Go; его единственная прямая внешняя зависимость — библиотека терминального интерфейса `gocui`, явно разрешённая в ТЗ.
 
 ```sh
 git clone https://github.com/ernat-soltanbekov/net-link.git
@@ -17,24 +17,24 @@ go build -o TCPChat .
 ./TCPChat 2525
 ```
 
-In the second and third terminals:
+Во втором и третьем терминалах:
 
 ```sh
 nc localhost 2525
-# Or use the included clients:
+# Или воспользуйтесь клиентами из проекта:
 ./TCPChat -c localhost 2525
 ./TCPChat --tui localhost 2525
 ```
 
-Enter a name when prompted, then type messages. Press Ctrl-C to exit. TUI: Enter sends; PgUp/PgDn scroll vertically; F7/F8 scroll horizontally; Ctrl-C exits. It shows one local `> message` line; incoming messages retain their timestamp and sender. A real terminal of at least 36×12 is required. Long incoming lines can be inspected with F7/F8 scrolling; plain `nc` also receives their full text.
+После приглашения введите имя, затем отправляйте сообщения. Для выхода нажмите Ctrl-C. В терминальном интерфейсе Enter отправляет сообщение, PgUp/PgDn прокручивают историю по вертикали, F7/F8 — по горизонтали, Ctrl-C завершает работу. Введённое сообщение отображается один раз в виде `> сообщение`; входящие сообщения сохраняют время отправки и имя автора. Требуется настоящий терминал размером не менее 36×12 символов. Длинные строки можно просматривать с помощью F7/F8; обычный `nc` также получает их полный текст.
 
-`./TCPChat` listens on **8989**. `./TCPChat 2525 localhost` prints exactly:
+`./TCPChat` слушает порт **8989**. Команда `./TCPChat 2525 localhost` выводит в точности:
 
 ```text
 [USAGE]: ./TCPChat $port
 ```
 
-The default bind address accepts connections on available interfaces. For a local-only session:
+По умолчанию сервер принимает подключения на доступных сетевых интерфейсах. Для сеанса только на локальном компьютере:
 
 ```sh
 ./TCPChat -l -p 2525 -s 127.0.0.1
@@ -42,65 +42,65 @@ The default bind address accepts connections on available interfaces. For a loca
 ./TCPChat -c -N localhost 2525
 ```
 
-`-l` listens, `-p` selects a listening port, `-s` selects the local bind address, `-v` writes diagnostics to stderr, `-w` sets a **connection timeout** (not an idle timeout), `-z` probes a TCP port without sending input. `-N` half-closes output at input EOF and continues reading until the peer closes; without it, EOF closes the client. Run `./TCPChat --help` for all options. These are the implemented NetCat-style flags; UDP and arbitrary NetCat flag combinations are outside this TCP chat protocol.
+Флаг `-l` включает режим сервера, `-p` задаёт порт прослушивания, `-s` — локальный адрес привязки, `-v` выводит диагностику в stderr, `-w` задаёт **тайм-аут установления соединения** и не ограничивает время простоя, `-z` проверяет доступность TCP-порта без передачи данных. Флаг `-N` при завершении ввода (EOF) закрывает только отправляющую сторону соединения и продолжает читать ответ до отключения другой стороны; без него EOF завершает работу клиента. Все параметры описаны в `./TCPChat --help`. Реализованы перечисленные флаги в стиле NetCat; UDP и произвольные сочетания флагов NetCat не входят в этот протокол TCP-чата.
 
-## Commands and bonuses
+## Команды и бонусные задания
 
-| Command | Result |
+| Команда | Результат |
 |---|---|
-| `/nick New Name` | Rename; notify the room and move this connection’s message credits to the new name. |
-| `/join dojo` | Create/join an isolated room; receive its complete history and profile. |
-| `/rooms` | List rooms and current membership. |
-| `/who` | List members of the current room. |
-| `/profile` | Recompute the current room’s activity summary. |
-| `/help` | Show commands. |
-| `/quit` | Disconnect this client. |
+| `/nick Новое Имя` | Изменить имя, уведомить комнату и перенести счётчики сообщений этого соединения на новое имя. |
+| `/join dojo` | Создать отдельную комнату или войти в существующую; получить её полную историю и профиль активности. |
+| `/rooms` | Показать комнаты и количество участников. |
+| `/who` | Показать участников текущей комнаты. |
+| `/profile` | Пересчитать сводку активности текущей комнаты. |
+| `/help` | Показать команды. |
+| `/quit` | Отключить этого клиента. |
 
-All requested bonuses are implemented: name changes and announcements, separate rooms, additional NetCat flags, a `gocui` UI, persistent activity logs, and a **private** warning after more than five messages in a sliding 30-second window. Warnings do not block messages or change message counters.
+Реализованы все запрошенные бонусы: смена имени с уведомлением, отдельные комнаты, дополнительные флаги NetCat, интерфейс на `gocui`, сохранение журналов активности и **личное** предупреждение при отправке более пяти сообщений за скользящий интервал в 30 секунд. Предупреждения не блокируют сообщения и не меняют их счётчики.
 
-Names are unique among connected clients, case-insensitively; 1–64 UTF-8 bytes. Empty names, `System`, control characters and `[]|:/\` are rejected. Room names use 1–32 lowercase ASCII letters, digits, `-` or `_`. A maximum of 32 rooms is retained per server session. Empty rooms retain history for returning users. Lines starting with `/` are commands; unknown commands receive a private usage response.
+Имена подключённых клиентов уникальны без учёта регистра и занимают от 1 до 64 байт UTF-8. Пустые имена, `System`, управляющие символы и `[]|:/\` запрещены. Названия комнат состоят из 1–32 строчных латинских букв ASCII, цифр, `-` или `_`. За один сеанс сервера сохраняется не более 32 комнат. История пустой комнаты остаётся доступной для возвращающихся пользователей. Строки, начинающиеся с `/`, считаются командами; на неизвестную команду клиент получает личную подсказку.
 
-## Profiling
+## Оценка активности
 
-`internal/chatprofile` exposes `Pace(total, elapsedMinutes)`, `TopTalker(counts)` and `Summary(...)`. Every room has its own start time and counters. The lobby starts with the server. Counters include successfully persisted chat messages only, including messages sent when nobody else is present.
+Пакет `internal/chatprofile` предоставляет функции `Pace(total, elapsedMinutes)`, `TopTalker(counts)` и `Summary(...)`. У каждой комнаты собственные время начала сеанса и счётчики. Сеанс комнаты `lobby` начинается вместе с сервером. Учитываются только успешно сохранённые сообщения чата, в том числе отправленные в отсутствие других участников.
 
-| Real messages/minute | Label |
+| Число сообщений в минуту без округления | Метка |
 |---|---|
-| Below 3 (including 2.4) | `quiet` |
-| 3 through 10, inclusive | `active` |
-| Above 10 | `lively` |
+| Менее 3, включая 2,4 | `quiet` — тихо |
+| От 3 до 10 включительно | `active` — активно |
+| Более 10 | `lively` — оживлённо |
 
-Immediately after history, a new participant receives:
+Сразу после истории новый участник получает:
 
 ```text
 [System]: Session profile | pace: active | top talker: Yenlik (8 msgs) | total: 15 msgs
 ```
 
-Without messages: `[System]: Session profile | pace: quiet | no messages yet`.
+Если сообщений ещё нет: `[System]: Session profile | pace: quiet | no messages yet`.
 
-Ties use ascending names for deterministic results. Historical counts remain after disconnect; reconnecting with the same spelling adds to that name’s existing count. Renaming moves only that connection’s contributions, across rooms it visited, without changing total counts or historical message text. With positive messages but zero elapsed time, pace is `lively`; with zero messages it is always `quiet`. Tests cover fractional rates, both boundaries, ties and invalid helper inputs.
+При равенстве счётчиков выбирается первое имя в порядке сравнения строк Go, поэтому результат воспроизводим. Накопленные счётчики сохраняются после отключения; повторное подключение с тем же написанием имени продолжает его счётчик. Смена имени переносит только вклад этого соединения во всех посещённых комнатах, не меняя общего количества сообщений и текста истории. Если сообщения есть, а прошедшее время равно нулю, возвращается `lively`; при отсутствии сообщений всегда возвращается `quiet`. Тесты проверяют дробные значения скорости, обе границы, равенство счётчиков и некорректные аргументы вспомогательных функций.
 
-## Reliability and storage
+## Отказоустойчивость и хранение
 
-- Ten connections total across all rooms, **including clients still entering a name**. The eleventh receives a refusal and closes. A pending name has a 30-second deadline.
-- Separate reader/writer goroutines per connection. One mutex orders membership, counters, history append and queue insertion. Socket I/O never runs under that mutex. Disk writes are serialized with state changes.
-- A 256-delivery queue per client, a five-second deadline per socket write, and a 4096-byte maximum message. A non-reading client loses its own connection; queue overflow never blocks a broadcaster. Oversized input disconnects; invalid control characters receive a private rejection.
-- History is a disk file, replayed through a fixed-length reader. Messages accepted during replay queue behind that snapshot and its profile. Message history does not accumulate in server RAM. Counters retain one entry per historical name that still owns messages.
-- `logs/net-link.log` contains activity and accepted messages; `logs/session-*/ROOM.history` contains complete, timestamped room transcripts. These are private local files, ignored by Git. `--log PATH` changes the activity log path; its parent directory must exist. Every restart begins fresh room counters/history while retaining earlier files and appending to the activity log.
-- A failed history or message-log write prevents broadcast and counting, rolls back the history prefix where possible, and tells the sender the message was not delivered. Successful writes are buffered by the OS; power-loss durability and cross-file crash transactions are not claimed. Runtime system-event log failures are reported to stderr.
-- Files are retained without automatic deletion. Disk usage grows with accepted traffic; remove old session files only when the server is stopped. The TUI retains the most recent 2000 screen lines; the server transcript and raw TCP replay remain complete.
+- Всего допускается десять соединений во всех комнатах, **включая клиентов, которые ещё вводят имя**. Одиннадцатое соединение получает отказ и закрывается. На ввод имени отводится 30 секунд.
+- Каждое соединение обслуживают отдельные горутины чтения и записи. Один мьютекс упорядочивает изменения состава участников, счётчиков, истории и очередей отправки. Чтение и запись сокетов выполняются без удержания этого мьютекса. Запись на диск согласована с изменениями состояния.
+- Для каждого клиента предусмотрена очередь из 256 отправлений, тайм-аут в пять секунд на каждую запись в сокет и ограничение сообщения в 4096 байт. Если клиент не читает данные, закрывается только его соединение; переполнение очереди не блокирует рассылку остальным. Слишком длинный ввод приводит к отключению, а недопустимые управляющие символы — к личному сообщению об отказе.
+- История хранится в файле и читается до заранее зафиксированной границы. Сообщения, принятые во время передачи истории, попадают в очередь после неё и соответствующего профиля. История сообщений не накапливается в оперативной памяти сервера. В таблице счётчиков остаётся по одной записи на каждое историческое имя, за которым ещё числятся сообщения.
+- `logs/net-link.log` содержит события и принятые сообщения; `logs/session-*/ROOM.history` — полные журналы переписки комнат с отметками времени. Это локальные файлы с ограниченными правами доступа, исключённые из Git. Параметр `--log PATH` меняет путь журнала активности; родительский каталог должен существовать. После перезапуска история и счётчики комнат начинаются заново, предыдущие файлы сохраняются, а журнал активности дополняется.
+- При ошибке записи истории или журнала сообщение не рассылается и не учитывается. Если возможно, файл истории возвращается к последней сохранённой границе; отправитель получает уведомление, что сообщение не доставлено. Успешные записи буферизуются ОС; сохранность при отключении питания и атомарность изменений сразу в двух файлах не гарантируются. Ошибки записи системных событий выводятся в stderr.
+- Файлы сохраняются без автоматического удаления. Расход дискового пространства растёт с объёмом принятых сообщений; удалять файлы старых сеансов следует только при остановленном сервере. Терминальный интерфейс хранит последние 2000 строк экрана; файл истории и её передача по TCP остаются полными.
 
-The protocol is plain TCP with user-chosen names; it does not provide account authentication, encryption, or message delivery acknowledgements. A local typed line is not a delivery receipt. `Server.Close()` is idempotent and waits for its owned goroutines. The standalone process uses normal OS signal termination; logs are written per event without a user-space buffering layer.
+Используется обычный TCP с именами, выбранными пользователями, без проверки учётных записей, шифрования и подтверждения доставки сообщений. Отображение введённой строки само по себе не подтверждает доставку. Повторный вызов `Server.Close()` безопасен: метод дожидается завершения всех горутин сервера. Самостоятельный процесс завершается по сигналам стандартным способом ОС; журнал записывается при каждом событии без дополнительного буфера приложения.
 
-## Verify and study
+## Проверка и изучение
 
 ```sh
 go test ./...
-make test                 # vet, race detector, import allowlist
-make audit                # black-box acceptance + real TUI through a PTY
-make stress               # also 800 concurrent messages and ~7.6 MB replay
+make test                 # анализ vet, детектор гонок, проверка разрешённых импортов
+make audit                # внешний аудит и настоящий интерфейс через псевдотерминал
+make stress               # дополнительно: 800 сообщений и история объёмом около 7,6 МБ
 ```
 
-The black-box tests temporarily use ports 8989/2525 for the exact audit scenarios, then ephemeral ports. Those two ports must be free. The CI runs the full suite on Linux (Go 1.25 and 1.27) and macOS (Go 1.27), with fuzzing on the latest Linux job.
+Внешние тесты сначала используют порты 8989 и 2525 для точного воспроизведения сценариев аудита, затем — автоматически выбранные свободные порты. Порты 8989 и 2525 должны быть свободны. CI запускает полный набор проверок на Linux с Go 1.25 и 1.27 и на macOS с Go 1.27; задание Linux с новой версией Go также выполняет фаззинг — проверку на автоматически генерируемых входных данных.
 
-Read [the audit checklist](docs/AUDIT.md) and [the concurrency walkthrough](docs/ARCHITECTURE.md). The written subject contradicts itself once about echoing to the sender; this implementation follows its explicit **no self-echo** requirement. Automated checks do not replace the audit’s conversation about your understanding.
+Прочитайте [карту аудита](docs/AUDIT.md) и [разбор конкурентного выполнения](docs/ARCHITECTURE.md). В одном месте ТЗ противоречит само себе относительно повторной отправки сообщения автору; реализация следует явному требованию **не возвращать отправителю его сообщение**. Автоматические проверки не заменяют устную часть аудита с объяснением работы программы.

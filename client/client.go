@@ -1,4 +1,4 @@
-// Package client supplies the plain stream client and the optional gocui UI.
+// Пакет client предоставляет обычный потоковый клиент и дополнительный интерфейс gocui.
 package client
 
 import (
@@ -12,9 +12,10 @@ func Connect(address string, timeout time.Duration) (net.Conn, error) {
 	return net.DialTimeout("tcp", address, timeout)
 }
 
-// Pump owns socket and input. Closing input cancels a blocked terminal read when
-// the peer disconnects. -N half-closes TCP output on EOF and drains the reply.
-// Without -N, input EOF closes the whole connection like a short-lived nc client.
+// Pump управляет ресурсами socket и input. При отключении другой стороны закрытие
+// input прерывает заблокированное чтение из терминала. С флагом -N конец ввода (EOF)
+// закрывает только отправляющую сторону TCP, после чего клиент дочитывает ответ.
+// Без -N конец ввода закрывает соединение целиком, как при коротком сеансе nc.
 func Pump(socket net.Conn, input io.ReadCloser, output io.Writer, halfClose bool) error {
 	defer socket.Close()
 	defer input.Close()

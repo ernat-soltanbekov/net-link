@@ -1,30 +1,30 @@
-# Audit map
+# Карта аудита
 
-The local assignment is the source of requirements. Its coaching prompts are educational text; the user explicitly requested a completed implementation. The project documents actual behavior and does not claim that automated tests certify the learner’s personal understanding.
+Источником требований служит приложенное задание. Содержащиеся в нём подсказки для обучения относятся к учебному материалу; пользователь прямо запросил готовую реализацию. Здесь описано фактическое поведение программы. Автоматические тесты не подтверждают личное понимание проекта учащимся.
 
-| Subject requirement | Implementation | Evidence |
+| Требование ТЗ | Реализация | Проверка |
 |---|---|---|
-| Required layout and Go module | `main.go`, `server/`, `client/`, `internal/chatprofile/` | `go test ./...`, import script |
-| Default 8989 / explicit 2525 / exact usage | `parse`, `run` | Go argument tests; real process checks |
-| Linux logo and required name | `Welcome`, `read` | Real TCP greetings; empty/reserved/duplicate-name tests |
-| At most ten clients | Slot reserved before handshake | Ten unnamed sockets plus rejected eleventh; slot reuse |
-| Nonempty timestamped messages | `message` | Exact timestamp test; UTF-8 black-box test |
-| No server self-echo | `broadcast` excludes sender | Ordered barrier test; eight concurrent sender transcripts |
-| Join/leave announcements | `event` | Two-, three- and four-client tests; disconnect survivors |
-| All prior messages | Disk snapshot delivery | Complete 600-message Go replay; 800-message black-box replay; 7.6 MB live/replay boundary |
-| Goroutines and synchronization | Reader/writer goroutines, mutex, bounded channels | `go test -race`; race-instrumented binary audit in CI |
-| Server and client errors | Deadline, queue, connection, persistence paths | Refusal, EOF, broken output, closed history, injected full disk, bad startup log |
-| Dedicated profiler helpers | `Pace`, `TopTalker`, `Summary` | 100% statement coverage for profiler in local unit run |
-| Immediate session profile | Same delivery as history | Exact empty and populated profile order tests |
-| Fractional pace and 3/10 boundaries | Real division, no rounding | Unit table plus fuzzing |
-| Name changes and announcements | `/nick` | Credits preserved, room informed, real TUI rename |
-| Multiple chat groups | `/join`, `/rooms`, `/who` | Isolated histories/counters, room limit and invalid-name tests |
-| More NetCat flags | `-l -p -s -c -v -w -N -z` | Parser tests; probe, refusal, genuine half-close/reply tests |
-| Terminal UI | `github.com/jroimartin/gocui` | Real PTY enters name, sends text, renames, shrinks/resizes with draft preservation, exits |
-| Saved logs | Activity log + per-room history files | Disk content assertions; failed-persistence rollback |
-| Private flood warning | Last-six timestamp window | Exact sixth message, private-only delivery, expiration boundary |
+| Заданная структура и модуль Go | `main.go`, `server/`, `client/`, `internal/chatprofile/` | `go test ./...`, скрипт проверки импортов |
+| Порт 8989 по умолчанию, явный порт 2525, точная строка использования | `parse`, `run` | Тесты аргументов на Go и запуск настоящих процессов |
+| Логотип Linux и обязательное имя | `Welcome`, `read` | TCP-приветствие; пустые, зарезервированные и повторяющиеся имена |
+| Не более десяти клиентов | Место резервируется до ввода имени | Десять соединений без имени, отказ одиннадцатому, повторное использование освободившегося места |
+| Непустые сообщения с отметкой времени | `message` | Точный формат времени и внешний тест UTF-8 |
+| Отсутствие эха отправителю | `broadcast` исключает отправителя | Проверка очередности ответов; переписка восьми одновременных отправителей |
+| Уведомления о подключении и отключении | `event` | Тесты с двумя, тремя и четырьмя клиентами; работа оставшихся после отключения |
+| Полная история сообщений | Чтение файла до зафиксированной границы | История из 600 сообщений в Go-тесте, 800 сообщений во внешнем тесте, передача 7,6 МБ одновременно с текущей перепиской |
+| Горутины и синхронизация | Горутины чтения и записи, мьютекс, ограниченные каналы | `go test -race`; аудит сборки с детектором гонок в CI |
+| Обработка ошибок сервера и клиента | Тайм-ауты, очереди, соединения и сохранение | Отказ в подключении, EOF, ошибка вывода, закрытый файл истории, имитация заполненного диска, ошибка журнала при запуске |
+| Отдельные функции оценки активности | `Pace`, `TopTalker`, `Summary` | Локальные модульные тесты покрывают 100% операторов пакета профилировщика |
+| Профиль сразу после истории | Передаётся вместе с историей одним отправлением | Точная проверка порядка пустого и заполненного профиля |
+| Дробная скорость и границы 3/10 | Деление без округления | Таблица модульных тестов и фаззинг |
+| Смена имени и уведомления | `/nick` | Сохранение счётчиков, уведомление комнаты, переименование через настоящий интерфейс |
+| Несколько групповых чатов | `/join`, `/rooms`, `/who` | Раздельные истории и счётчики, лимит комнат, недопустимые названия |
+| Дополнительные флаги NetCat | `-l -p -s -c -v -w -N -z` | Разбор аргументов, проверка порта, отказ в подключении, закрытие только отправляющей стороны с чтением ответа |
+| Терминальный интерфейс | `github.com/jroimartin/gocui` | Ввод имени и сообщения через настоящий псевдотерминал, смена имени, уменьшение и восстановление окна с сохранением черновика, выход |
+| Сохранение журналов | Журнал активности и файлы истории комнат | Проверка содержимого файлов и отката после ошибки сохранения |
+| Личное предупреждение о частой отправке | Последние шесть отметок времени | Предупреждение ровно на шестом сообщении, только отправителю; проверка истечения интервала |
 
-## Repeatable checks
+## Воспроизводимые проверки
 
 ```sh
 go vet ./...
@@ -37,16 +37,16 @@ go test ./server -run '^$' -fuzz FuzzValidation -fuzztime 10s -parallel 2
 go test . -run '^$' -fuzz FuzzArguments -fuzztime 10s -parallel 2
 ```
 
-`testing` is used only in test files, as required for Go unit tests. Production direct imports are restricted to the assignment’s standard-library list, the project’s own packages, and the explicitly allowed gocui bonus. `termbox-go` and `go-runewidth` are gocui’s indirect dependencies, pinned in `go.mod`/`go.sum`; there is no second UI framework. Python is independent verification tooling.
+Пакет `testing` используется только в тестовых файлах для модульных тестов Go. Прямые импорты приложения ограничены разрешёнными в ТЗ пакетами стандартной библиотеки, собственными пакетами проекта и явно разрешённым бонусом gocui. `termbox-go` и `go-runewidth` — косвенные зависимости gocui, версии которых зафиксированы в `go.mod` и `go.sum`; другого фреймворка интерфейса нет. Python используется как независимый инструмент проверки.
 
-## Scope and interpretation
+## Границы задачи и трактовка требований
 
-The audit includes one three-client question asking whether all three receive a message, while the explicit behavior note and earlier test prohibit server echo to the sender. We preserve one local copy and deliver the same formatted message to both other clients. A later join receives all historical messages, regardless of who originally sent them.
+Один вопрос аудита для трёх клиентов спрашивает, получают ли сообщение все трое, хотя явное примечание и более ранний тест запрещают серверу возвращать сообщение отправителю. Реализация сохраняет одну локальную копию и доставляет одинаковое форматированное сообщение двум другим клиентам. Подключившийся позже участник получает всю историю независимо от авторства сообщений.
 
-Profiler “session” means the current server lifetime for the default room. Bonus rooms each start their own session at creation, avoiding disclosure of another room’s conversation or activity. Chat history contains chat messages; transient join/leave/rename notices are saved in the activity log, not replayed as messages.
+Для комнаты по умолчанию «сеанс» профилировщика означает время работы текущего экземпляра сервера. У каждой дополнительной комнаты сеанс начинается при её создании, поэтому переписка и активность других комнат не раскрываются. История содержит сообщения чата; уведомления о подключении, отключении и смене имени сохраняются в журнале активности и не воспроизводятся как сообщения истории.
 
-Limits are explicit: ten concurrent sockets, 32 session rooms, 64-byte names, 4096-byte text, 256 queued deliveries per peer, 30-second name entry, five-second writes, and a 2000-line TUI window. Activity/history files are retained; storage capacity and the number of historical participant names are not artificially truncated. This is a plain TCP chat, not a durable authenticated messaging service.
+Ограничения заданы явно: десять одновременных соединений, 32 комнаты за сеанс, имена до 64 байт, текст до 4096 байт, 256 отправлений в очереди клиента, 30 секунд на ввод имени, пять секунд на запись и 2000 строк в терминальном интерфейсе. Файлы журналов и истории сохраняются; объём хранения и количество исторических имён участников не обрезаются искусственно. Это обычный TCP-чат без подтверждённой долговременной доставки и проверки учётных записей.
 
-The school’s linked `good-practices` endpoint could not be retrieved during implementation. The project applies Go formatting, small named helpers, explicit ownership, no panics for expected input failures, checked startup errors, bounded network buffers and independent tests. It does not claim to have verified an inaccessible checklist.
+Указанный школой адрес `good-practices` был недоступен во время реализации. В проекте применяются форматирование Go, небольшие именованные функции, явное управление ресурсами, обработка ожидаемых ошибок ввода без паники, проверка ошибок запуска, ограниченные сетевые буферы и независимые тесты. Проверка недоступного списка требований не заявляется.
 
-The oral stakeholder audit remains a live human exercise. Use the architecture walkthrough to study and demonstrate concurrency, locking, pace calculation, ties and examples; no test can establish that understanding for you.
+Устная часть аудита проходит в живом разговоре. Разбор архитектуры помогает изучить и объяснить конкурентное выполнение, блокировки, расчёт скорости, выбор при равенстве счётчиков и конкретные примеры; автоматические тесты не устанавливают понимание этих тем человеком.

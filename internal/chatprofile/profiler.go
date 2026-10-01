@@ -1,10 +1,10 @@
-// Package chatprofile contains pure, independently testable chat statistics.
+// Пакет chatprofile содержит чистые функции статистики чата, проверяемые независимо.
 package chatprofile
 
 import "fmt"
 
-// Pace classifies the real rate, including both boundaries 3 and 10.
-// With messages but no elapsed time the rate is treated as instantaneous/lively.
+// Pace классифицирует скорость без округления, включая граничные значения 3 и 10.
+// Если сообщения уже есть, а прошедшее время равно нулю, активность считается мгновенной: lively.
 func Pace(total int, elapsedMinutes float64) string {
 	if total <= 0 || elapsedMinutes != elapsedMinutes {
 		return "quiet"
@@ -22,7 +22,8 @@ func Pace(total int, elapsedMinutes float64) string {
 	return "lively"
 }
 
-// TopTalker breaks ties by ascending name, independent of Go map iteration order.
+// TopTalker при равенстве счётчиков выбирает первое имя в порядке сравнения строк Go,
+// независимо от порядка обхода словаря.
 func TopTalker(counts map[string]int) (name string, count int) {
 	for candidate, n := range counts {
 		if n > count || (n == count && n > 0 && candidate < name) {

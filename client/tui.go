@@ -22,8 +22,8 @@ type terminal struct {
 	draft      string
 }
 
-// TUI runs one terminal session. Network workers never access gocui views.
-// Acknowledged Update calls preserve wire order and bound pending UI updates.
+// TUI запускает один терминальный сеанс. Сетевые горутины не обращаются к окнам gocui.
+// Ожидание выполнения каждого Update сохраняет порядок данных и ограничивает очередь обновлений.
 func TUI(socket net.Conn) error {
 	defer socket.Close()
 	g, err := gocui.NewGui(gocui.OutputNormal)
@@ -129,7 +129,7 @@ func TUI(socket net.Conn) error {
 	return err
 }
 
-// Strip terminal control sequences even when connected to an unrelated server.
+// Удаляем управляющие символы терминала, в том числе при подключении к стороннему серверу.
 func displayText(s string) string {
 	return strings.Map(func(r rune) rune {
 		if r < 32 || (r >= 127 && r <= 159) {
@@ -154,7 +154,7 @@ func (u *terminal) submit(_ *gocui.Gui, v *gocui.View) error {
 	}
 	select {
 	case u.send <- text:
-		u.add("> " + displayText(text)) // One local copy; the server does not echo it.
+		u.add("> " + displayText(text)) // Одна локальная копия: сервер не возвращает сообщение отправителю.
 		u.offset = 0
 		v.Clear()
 		if err := v.SetCursor(0, 0); err != nil {

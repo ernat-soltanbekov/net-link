@@ -1,4 +1,4 @@
-// Package server implements a line-oriented TCP chat compatible with nc.
+// Пакет server реализует совместимый с nc TCP-чат с построчным обменом сообщениями.
 package server
 
 import (
@@ -16,8 +16,8 @@ import (
 	"github.com/ernat-soltanbekov/net-link/internal/chatprofile"
 )
 
-// Config controls resources, not the required ten-client limit.
-// Now is injectable so rate boundaries can be tested without waiting minutes.
+// Config задаёт параметры ресурсов; установленный ТЗ лимит в десять клиентов сохраняется.
+// Подменяемая функция Now позволяет проверять границы скорости, не ожидая несколько минут.
 type Config struct {
 	HistoryDir       string
 	Log              io.Writer
@@ -36,8 +36,9 @@ type room struct {
 	counts  map[string]int
 }
 
-// A replay reads a fixed prefix of an append-only file. New messages go behind
-// it in the same output queue, so replay and live traffic cannot cross or repeat.
+// История читается до зафиксированной границы дополняемого файла. Новые сообщения
+// встают после неё в ту же очередь, поэтому история и текущая переписка не смешиваются
+// и не дублируются.
 type delivery struct {
 	history *os.File
 	size    int64
@@ -57,9 +58,9 @@ type connection struct {
 
 func (c *connection) stop() { c.stopOnce.Do(func() { close(c.done); _ = c.socket.Close() }) }
 
-// Server.mu owns membership, room counters, history appends, and queue ordering.
-// No socket read or write runs while mu is held. A slow peer only fills its own
-// bounded queue and is disconnected; it cannot stall other network writers.
+// Server.mu защищает состав участников, счётчики комнат, дополнение истории и порядок очередей.
+// Чтение и запись сокетов выполняются без удержания mu. Медленный клиент заполняет
+// только свою ограниченную очередь и отключается, не блокируя отправку остальным.
 type Server struct {
 	mu         sync.Mutex
 	listener   net.Listener
@@ -75,7 +76,7 @@ type Server struct {
 	sessionDir string
 }
 
-// Start takes ownership of listener. Close waits for all owned goroutines.
+// Start принимает управление listener. Close дожидается завершения всех горутин сервера.
 func Start(listener net.Listener, cfg Config) (*Server, error) {
 	if cfg.Now == nil {
 		cfg.Now = time.Now
@@ -156,14 +157,14 @@ func (s *Server) accept() {
 		}
 		if len(s.clients) >= MaxConnections {
 			s.mu.Unlock()
-			// A tiny bounded refusal does not allocate a new client goroutine.
+			// Короткий ответ с ограничением времени записи не требует отдельной горутины клиента.
 			_ = socket.SetWriteDeadline(time.Now().Add(100 * time.Millisecond))
 			_, _ = io.WriteString(socket, "[System]: Server is full (10 connections). Try again later.\n")
 			_ = socket.Close()
 			continue
 		}
 		c := &connection{socket: socket, out: make(chan delivery, s.cfg.QueueSize), counts: make(map[*room]int), done: make(chan struct{})}
-		s.clients[c] = true // Pending names also consume a slot.
+		s.clients[c] = true // Клиенты, которые ещё вводят имя, тоже занимают место.
 		s.wg.Add(2)
 		c.out <- delivery{text: Welcome}
 		s.mu.Unlock()
@@ -189,8 +190,8 @@ func (s *Server) Close() {
 	})
 }
 
-// enqueue is called with mu held. Channels are never closed: disconnecting a
-// reader cannot cause a concurrent broadcaster to panic on a closed channel.
+// enqueue вызывается с удержанием mu. Каналы не закрываются: отключение читающего
+// клиента не вызовет панику при одновременной отправке сообщения в его канал.
 func (s *Server) enqueue(c *connection, d delivery) {
 	select {
 	case c.out <- d:
@@ -285,7 +286,7 @@ func (s *Server) read(c *connection) {
 func (s *Server) message(c *connection, text string) {
 	r := c.room
 	line := s.stamp() + "[" + c.name + "]:" + text + "\n"
-	// Persist before broadcasting/counting. Failure never creates phantom stats.
+	// Сначала сохраняем сообщение, затем рассылаем и учитываем: сбой не искажает статистику.
 	n, err := r.history.WriteAt([]byte(line), r.size)
 	if err == nil && n != len(line) {
 		err = io.ErrShortWrite
@@ -308,7 +309,7 @@ func (s *Server) message(c *connection, text string) {
 	}
 }
 
-// Refresh the deadline for each write, including large history replays.
+// Обновляем предельное время каждой записи, в том числе при передаче большой истории.
 type timedWriter struct {
 	socket  net.Conn
 	timeout time.Duration

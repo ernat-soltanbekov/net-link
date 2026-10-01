@@ -113,7 +113,7 @@ func TestChatHistoryNoEchoAndProfiles(t *testing.T) {
 	if b.line() != "[2026-01-01 12:01:00][Yenlik]:hello" {
 		t.Fatal("wire format")
 	}
-	// Profile is an ordered barrier: no echo may appear before this reply.
+	// Ответ с профилем отмечает обработку предыдущих сообщений: перед ним не должно быть эха.
 	a.send("/profile")
 	requireContains(t, a.line(), "pace: quiet | top talker: Yenlik (1 msgs) | total: 1 msgs")
 	a.send("")
@@ -147,14 +147,14 @@ func TestRenameRoomsAndPrivateFloodWarning(t *testing.T) {
 		b.until("[A]:")
 	}
 	a.send("/profile")
-	requireContains(t, a.line(), "total: 5 msgs") // No warning at five.
+	requireContains(t, a.line(), "total: 5 msgs") // На пятом сообщении предупреждения ещё нет.
 	a.send("six")
 	b.until("[A]:six")
 	if a.line() != strings.TrimSuffix(FloodWarning, "\n") {
 		t.Fatal("missing private flood warning")
 	}
 	b.send("/profile")
-	requireContains(t, b.line(), "total: 6 msgs") // Warning not broadcast.
+	requireContains(t, b.line(), "total: 6 msgs") // Предупреждение не рассылается остальным.
 	clock.advance(30 * time.Second)
 	a.send("after window")
 	b.until("[A]:after window")
@@ -171,7 +171,7 @@ func TestRenameRoomsAndPrivateFloodWarning(t *testing.T) {
 	a.send("room secret")
 	requireContains(t, a.profile(), "total: 1 msgs")
 	b.send("/profile")
-	requireContains(t, b.line(), "total: 7 msgs") // No room leakage.
+	requireContains(t, b.line(), "total: 7 msgs") // Данные другой комнаты не попадают в эту комнату.
 	b.send("/join dojo")
 	history := b.until("room: dojo")
 	if len(history) != 3 || !strings.Contains(history[0], "room secret") || !strings.Contains(history[1], "total: 1 msgs") {
@@ -397,7 +397,7 @@ func TestConcurrentMessagesAndCompleteReplay(t *testing.T) {
 			_, _ = fmt.Fprintln(p.socket, "/profile")
 		}(i, p)
 	}
-	// Drain all senders concurrently, including their private warning streams.
+	// Одновременно читаем ответы всех отправителей, включая личные предупреждения.
 	var readers sync.WaitGroup
 	fail := make(chan string, 4)
 	for i, p := range peers {

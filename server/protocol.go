@@ -28,8 +28,9 @@ const Welcome = "Welcome to TCP-Chat!\n" +
 	"     `-'       `--'\n" +
 	"[ENTER YOUR NAME]:\n"
 
-// Control characters and invalid UTF-8 cannot inject terminal commands or log lines.
-// Range decodes invalid UTF-8 as U+FFFD; rejecting that rune also rejects literal U+FFFD.
+// Отсекаем управляющие символы и некорректный UTF-8, чтобы исключить внедрение команд
+// терминала и поддельных строк журнала. Цикл range заменяет некорректный UTF-8 на U+FFFD;
+// запрет этой руны также запрещает явно введённый символ U+FFFD.
 func validText(s string) bool {
 	for _, r := range s {
 		if r < 32 || (r >= 127 && r <= 159) || r == '\ufffd' || r == '\u2028' || r == '\u2029' || (r >= '\u202a' && r <= '\u202e') || (r >= '\u2066' && r <= '\u2069') {
@@ -55,8 +56,8 @@ func validRoom(s string) bool {
 	return true
 }
 
-// A fixed six-element window suffices to detect the sixth message in 30 seconds.
-// Empty messages and commands never reach this function.
+// Для обнаружения шестого сообщения за 30 секунд достаточно хранить шесть отметок времени.
+// Пустые сообщения и команды в эту функцию не попадают.
 func (c *connection) flooding(now time.Time) bool {
 	kept := c.recent[:0]
 	for _, t := range c.recent {

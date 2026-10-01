@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check direct imports against the subject; gocui is the explicit TUI exception."""
+"""Проверяем прямые импорты по ТЗ; gocui явно разрешён для терминального интерфейса."""
 import json
 import subprocess
 
