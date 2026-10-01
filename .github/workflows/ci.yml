@@ -1,0 +1,44 @@
+name: Audit
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  audit:
+    name: ${{ matrix.os }} / Go ${{ matrix.go }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            go: 1.25.x
+          - os: ubuntu-latest
+            go: 1.27.x
+          - os: macos-latest
+            go: 1.27.x
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-go@v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+      - name: Format, vet, and permitted imports
+        run: |
+          test -z "$(gofmt -l .)"
+          go vet ./...
+          python3 scripts/check_imports.py
+      - name: Unit, connection and concurrency tests
+        run: go test -race -cover ./...
+      - name: Build with race instrumentation
+        run: go build -race -o TCPChat .
+      - name: Black-box audit, stress and real terminal UI
+        run: python3 scripts/audit.py --stress --tui
+      - name: Fuzz protocol, profiler and arguments
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.27.x'
+        run: |
+          go test ./internal/chatprofile -run '^$' -fuzz FuzzPace -fuzztime 10s -parallel 2
+          go test ./server -run '^$' -fuzz FuzzValidation -fuzztime 10s -parallel 2
+          go test . -run '^$' -fuzz FuzzArguments -fuzztime 10s -parallel 2
